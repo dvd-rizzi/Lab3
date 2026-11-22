@@ -22,3 +22,5 @@ void calibration(TString dataset);
 void expfit(TString dataset);
 
 void lnfit (TString data, double infvoltage ,double topvoltage);
+
+void Test_fit (TString data);
