@@ -43,7 +43,7 @@ void expfit(TString data) {
     c2->SaveAs("Immagini/caratteristica.pdf");
 }
 
-void lnfit(TString data,double infvoltage, double topvoltage) {
+void lnfit_ger(TString data,double infvoltage, double topvoltage) {
     double v, i, v_err, fondo;
     std::vector<double> voltage;
     std::vector<double> lncurrent;
@@ -78,7 +78,7 @@ void lnfit(TString data,double infvoltage, double topvoltage) {
     ln->SetParameter(0, 5e-3);
     ln->SetParameter(1, 27.0);
     // ln->SetParLimits(0, 1e-9, 1.0);
-    // ln->SetParLimits(1, 1.0, 200.0);
+    ln->SetParLimits(1, 20, 30);
 
     dati->Fit(ln);
 
@@ -95,7 +95,62 @@ void lnfit(TString data,double infvoltage, double topvoltage) {
     ln->Draw("same");
 
     c3->SetGrid();
-    c3->SaveAs("Immagini/Caratteristica_ln.pdf");
+    c3->SaveAs("Immagini/Caratteristica_ln_ger.pdf");
+}
+
+void lnfit_sil(TString data,double infvoltage, double topvoltage) {
+    double v, i, v_err, fondo;
+    std::vector<double> voltage;
+    std::vector<double> lncurrent;
+    std::vector<double> voltage_err;
+    std::vector<double> i_err;
+
+    std::ifstream mydata(data.Data());
+    if (!mydata.is_open()) {
+        Error("lnfit", "Impossibile aprire %s", data.Data());
+        return;
+    }
+
+    while (mydata >> v >> i >> v_err >> fondo) {
+        if (v < infvoltage || v > topvoltage) continue;
+
+        voltage.push_back(v);
+        lncurrent.push_back(std::log(i));
+        voltage_err.push_back(v_err);
+        i_err.push_back(0.0);
+    }
+
+    TGraphErrors *dati = new TGraphErrors(
+        voltage.size(),
+        lncurrent.data(),
+        voltage.data(),
+        i_err.data(),
+        voltage_err.data()
+    );
+
+    TF1 *ln = new TF1("logfit", "-[1]*log([0]) + [1]*x");
+    ln->SetParNames("I_0", "etaV_T");
+    ln->SetParameter(0, 5e-3);
+    ln->SetParameter(1, 27.0);
+    // ln->SetParLimits(0, 1e-9, 1.0);
+    ln->SetParLimits(1, 45, 60);
+
+    dati->Fit(ln);
+
+    TCanvas *c5 = new TCanvas("c5", "Caratteristica_ln", 800, 600);
+    dati->SetMarkerStyle(20);
+    dati->SetLineColor(4);
+    dati->SetMarkerColor(4);
+    dati->SetTitle("");
+    dati->GetXaxis()->SetTitle("ln(Corrente / 1 mA)");
+    dati->GetYaxis()->SetTitle("Tensione (mV)");
+    dati->Draw("AP");
+
+    ln->SetLineColor(2);
+    ln->Draw("same");
+
+    c5->SetGrid();
+    c5->SaveAs("Immagini/Caratteristica_ln_sil.pdf");
 }
 
 
