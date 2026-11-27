@@ -19,10 +19,12 @@
 
 void calibration(TString dataset);
 
-void expfit(TString dataset);
+void expfit(TString dataset, double infvoltage, double topvoltage);
 
 void lnfit_ger (TString data, double infvoltage ,double topvoltage);
 
 void lnfit_sil (TString data, double infvoltage ,double topvoltage);
 
 void Test_fit (TString data);
+
+void double_exp(TString data1, TString data2);

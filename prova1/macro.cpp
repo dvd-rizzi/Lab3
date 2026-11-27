@@ -20,15 +20,15 @@ void calibration(TString data) {
   c1->SaveAs("Immagini/calibrazione.pdf");
 }
 
-void expfit(TString data) {
+void expfit(TString data, double infvoltage, double topvoltage) {
     TGraphErrors *dati = new TGraphErrors(data, "%lg %lg %lg %lg*");
     TF1 *exp = new TF1("exponential", "[0]*exp(x/([1]))");
     exp->SetParNames("I_0", "etaV_T");
     exp->SetParameter(0, 1e-3);
     exp->SetParameter(1, 26.0);
-    exp->SetRange(100, 250);
+    exp->SetRange(infvoltage, topvoltage);
     dati->Fit(exp, "R");
-    TCanvas *c2 = new TCanvas("c2", "Caratteristica", 800, 600);
+    TCanvas *c2 = new TCanvas("c2", "Caratteristica");//, 800, 600);
     dati->Draw("AP");
     dati->SetMarkerStyle(20);
     dati->SetLineColor(4);
@@ -36,19 +36,18 @@ void expfit(TString data) {
     dati->SetTitle("");
     dati->GetXaxis()->SetTitle("Tensione (mV)");
     dati->GetYaxis()->SetTitle("Corrente (mA)");
-    gPad->SetLogy();
-    exp->SetRange(0, 360);
     exp->Draw("same");
     c2->SetGrid();
+    c2->SetLogy();
     c2->SaveAs("Immagini/caratteristica.pdf");
 }
 
 void lnfit_ger(TString data,double infvoltage, double topvoltage) {
-    double v, i, v_err, fondo;
+    double v, i, v_err, i_err;
     std::vector<double> voltage;
     std::vector<double> lncurrent;
     std::vector<double> voltage_err;
-    std::vector<double> i_err;
+    std::vector<double> current_err;
 
     std::ifstream mydata(data.Data());
     if (!mydata.is_open()) {
@@ -56,20 +55,20 @@ void lnfit_ger(TString data,double infvoltage, double topvoltage) {
         return;
     }
 
-    while (mydata >> v >> i >> v_err >> fondo) {
+    while (mydata >> v >> i >> v_err >> i_err) {
         if (v < infvoltage || v > topvoltage) continue;
 
         voltage.push_back(v);
         lncurrent.push_back(std::log(i));
         voltage_err.push_back(v_err);
-        i_err.push_back(0.0);
+        current_err.push_back(i_err);
     }
 
     TGraphErrors *dati = new TGraphErrors(
         voltage.size(),
         lncurrent.data(),
         voltage.data(),
-        i_err.data(),
+        current_err.data(),
         voltage_err.data()
     );
 
@@ -99,11 +98,11 @@ void lnfit_ger(TString data,double infvoltage, double topvoltage) {
 }
 
 void lnfit_sil(TString data,double infvoltage, double topvoltage) {
-    double v, i, v_err, fondo;
+    double v, i, v_err, i_err;
     std::vector<double> voltage;
     std::vector<double> lncurrent;
     std::vector<double> voltage_err;
-    std::vector<double> i_err;
+    std::vector<double> current_err;
 
     std::ifstream mydata(data.Data());
     if (!mydata.is_open()) {
@@ -111,20 +110,20 @@ void lnfit_sil(TString data,double infvoltage, double topvoltage) {
         return;
     }
 
-    while (mydata >> v >> i >> v_err >> fondo) {
+    while (mydata >> v >> i >> v_err >> i_err) {
         if (v < infvoltage || v > topvoltage) continue;
 
         voltage.push_back(v);
         lncurrent.push_back(std::log(i));
         voltage_err.push_back(v_err);
-        i_err.push_back(0.0);
+        current_err.push_back(0.0);
     }
 
     TGraphErrors *dati = new TGraphErrors(
         voltage.size(),
         lncurrent.data(),
         voltage.data(),
-        i_err.data(),
+        current_err.data(),
         voltage_err.data()
     );
 
@@ -216,4 +215,24 @@ void Test_fit(TString data) {
     f_diodo->Draw("same");
 
     c4->SaveAs("Immagini/Test.pdf");
+}
+
+
+void double_exp(TString data1, TString data2) {
+    TGraph *silicio  = new TGraph(data1, "%lg %lg");
+    TGraph *germanio = new TGraph(data2, "%lg %lg");
+    silicio->GetXaxis()->SetTitle("Voltaggio (V)");
+    silicio->GetYaxis()->SetTitle("Corrente (mA)");
+    silicio->GetYaxis()->SetRangeUser(0, 2.2);
+    silicio->SetMarkerStyle(20);
+    silicio->SetMarkerColor(kBlue + 1);
+    silicio->SetLineColor(kBlue + 1);
+    germanio->SetMarkerStyle(20);
+    germanio->SetMarkerColor(kRed + 1);
+    germanio->SetLineColor(kRed + 1);
+    TCanvas *cc = new TCanvas("cc", "Curve caratteristiche", 800, 600);
+    silicio->Draw("APL");
+    germanio->Draw("PL same");
+    cc->SetGrid();
+    cc->SaveAs("Immagini/curve.pdf");
 }
