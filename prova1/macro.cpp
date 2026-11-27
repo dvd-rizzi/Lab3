@@ -74,11 +74,11 @@ void lnfit_ger(TString data,double infvoltage, double topvoltage) {
     );
 
     TF1 *ln = new TF1("logfit", "-[1]*log([0]) + [1]*x");
-    ln->SetParNames("I_0", "etaV_T");
+    ln->SetParNames("I_0", "etaV_T_Ger");
     ln->SetParameter(0, 5e-3);
-    ln->SetParameter(1, 27.0);
+    ln->SetParameter(1, 25.5);
     // ln->SetParLimits(0, 1e-9, 1.0);
-    ln->SetParLimits(1, 20, 30);
+    //ln->SetParLimits(1, 20, 30);
 
     dati->Fit(ln);
 
@@ -129,11 +129,11 @@ void lnfit_sil(TString data,double infvoltage, double topvoltage) {
     );
 
     TF1 *ln = new TF1("logfit", "-[1]*log([0]) + [1]*x");
-    ln->SetParNames("I_0", "etaV_T");
+    ln->SetParNames("I_0", "etaV_T_Sil");
     ln->SetParameter(0, 5e-3);
-    ln->SetParameter(1, 27.0);
+    ln->SetParameter(1, 53.0);
     // ln->SetParLimits(0, 1e-9, 1.0);
-    ln->SetParLimits(1, 45, 60);
+    //ln->SetParLimits(1, 45, 60);
 
     dati->Fit(ln);
 
